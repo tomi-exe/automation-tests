@@ -1,0 +1,19 @@
+image: node:20
+
+pipelines:
+  branches:
+    main:
+      - step:
+          name: Test and generate release docs
+          caches:
+            - node
+          script:
+            - npm ci
+            - npm test
+            - cd ..
+            # POC: reemplazar TU_WORKSPACE por el workspace real de Bitbucket.
+            # AUTOMATION_REPO_TOKEN debe tener permisos de lectura sobre release-docs-automation.
+            - git clone https://x-token-auth:${AUTOMATION_REPO_TOKEN}@bitbucket.org/TU_WORKSPACE/release-docs-automation.git
+            - cd release-docs-automation
+            - npm ci
+            - TARGET_REPO="../ticket-api-demo" npm run release:docs
