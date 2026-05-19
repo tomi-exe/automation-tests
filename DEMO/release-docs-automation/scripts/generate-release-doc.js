@@ -6,8 +6,8 @@ const OpenAI = require('openai');
 
 const automationRoot = path.resolve(__dirname, '..');
 const inputPath = path.join(automationRoot, 'release-input.json');
-const templatePath = path.join(automationRoot, 'templates', 'confluence-release-template.html');
-const outputPath = path.join(automationRoot, 'release-doc.html');
+const templatePath = path.join(automationRoot, 'templates', 'release-doc-template.md');
+const outputPath = path.join(automationRoot, 'release-doc.md');
 
 function requireFile(filePath) {
   if (!fs.existsSync(filePath)) {
@@ -17,16 +17,16 @@ function requireFile(filePath) {
 
 function buildPrompt(releaseInput, template) {
   return `
-Genera documentacion de release en HTML compatible con Confluence.
-Devuelve solo el HTML final.
-No incluyas texto fuera del HTML final.
-No uses markdown.
+Genera documentacion de release en Markdown.
+Devuelve solo el Markdown final.
+No incluyas texto fuera del Markdown final.
+No uses HTML.
 No inventes informacion.
 Si no hay suficiente informacion, indicalo explicitamente en la seccion correspondiente.
 
 Debes respetar exactamente la estructura del template.
-Debes reemplazar todos los placeholders con contenido HTML simple.
-Para {{resumen_tecnico}} y {{cambios_detallados}}, genera solamente elementos <li>...</li>.
+Debes reemplazar todos los placeholders con contenido Markdown simple.
+Para {{resumen_tecnico}} y {{cambios_detallados}}, genera solamente items Markdown con guion ("- ").
 Separa claramente:
 - resumen funcional
 - resumen tecnico
@@ -63,7 +63,7 @@ async function generateReleaseDoc() {
     messages: [
       {
         role: 'system',
-        content: 'You generate concise, accurate release documentation in simple Confluence-compatible HTML.'
+        content: 'You generate concise, accurate release documentation in Markdown.'
       },
       {
         role: 'user',
@@ -72,13 +72,13 @@ async function generateReleaseDoc() {
     ]
   });
 
-  const html = response.choices[0]?.message?.content?.trim();
+  const markdown = response.choices[0]?.message?.content?.trim();
 
-  if (!html) {
+  if (!markdown) {
     throw new Error('OpenAI returned an empty release document');
   }
 
-  fs.writeFileSync(outputPath, `${html}\n`, 'utf8');
+  fs.writeFileSync(outputPath, `${markdown}\n`, 'utf8');
   console.log(`Release document written to ${outputPath}`);
 }
 

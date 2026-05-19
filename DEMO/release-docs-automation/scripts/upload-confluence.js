@@ -3,9 +3,10 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
+const { marked } = require('marked');
 
 const automationRoot = path.resolve(__dirname, '..');
-const htmlPath = path.join(automationRoot, 'release-doc.html');
+const markdownPath = path.join(automationRoot, 'release-doc.md');
 const inputPath = path.join(automationRoot, 'release-input.json');
 
 function requireEnv(name) {
@@ -29,10 +30,11 @@ async function uploadToConfluence() {
     'CONFLUENCE_PARENT_PAGE_ID'
   ].forEach(requireEnv);
 
-  requireFile(htmlPath);
+  requireFile(markdownPath);
   requireFile(inputPath);
 
-  const html = fs.readFileSync(htmlPath, 'utf8');
+  const markdown = fs.readFileSync(markdownPath, 'utf8');
+  const html = marked.parse(markdown);
   const releaseInput = JSON.parse(fs.readFileSync(inputPath, 'utf8'));
   const baseUrl = process.env.CONFLUENCE_BASE_URL.replace(/\/$/, '');
   const title = `Release ${releaseInput.date} - ${releaseInput.branch}`;

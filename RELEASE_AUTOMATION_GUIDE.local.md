@@ -48,7 +48,7 @@ scripts/
   generate-sample-release.js
 
 templates/
-  confluence-release-template.html
+  release-doc-template.md
 
 package.json
 package-lock.json
@@ -60,7 +60,7 @@ README.md
 Responsabilidades:
 
 - Recolectar informacion de git desde un repo objetivo.
-- Generar documentacion HTML con Groq.
+- Generar documentacion Markdown con Groq.
 - Publicar una pagina hija en Confluence.
 - Poder ejecutarse contra cualquier repo usando `TARGET_REPO`.
 
@@ -118,7 +118,7 @@ collect-changes.js
         ↓
 generate-release-doc.js usando Groq
         ↓
-release-doc.html
+release-doc.md
         ↓
 upload-confluence.js
         ↓
@@ -283,36 +283,35 @@ release-input.json
 Responsabilidad:
 
 - Leer `release-input.json`.
-- Leer `templates/confluence-release-template.html`.
+- Leer `templates/release-doc-template.md`.
 - Enviar el contexto a Groq.
-- Generar HTML compatible con Confluence.
-- Pintar el titulo principal en rojo si `releaseStatus` es `broken`.
-- Agregar un macro rojo `BROKEN` compatible con Confluence si el release esta roto.
+- Generar Markdown.
+- Prefijar el titulo principal con `[BROKEN]` si `releaseStatus` es `broken`.
 - Explicar archivo, test y causa probable del fallo si existe salida de tests.
 
 Salida:
 
 ```text
-release-doc.html
+release-doc.md
 ```
 
 El prompt obliga a:
 
-- No usar Markdown.
+- No usar HTML.
 - No inventar informacion.
 - Separar resumen funcional y resumen tecnico.
 - Explicar cambios detallados.
 - Indicar impacto.
 - Indicar riesgos o consideraciones.
-- Mantener estructura HTML del template.
+- Mantener estructura Markdown del template.
 
 ### upload-confluence.js
 
 Responsabilidad:
 
-- Leer `release-doc.html`.
+- Leer `release-doc.md`.
 - Leer `release-input.json`.
-- Crear una pagina hija en Confluence.
+- Convertir Markdown a HTML y crear una pagina hija en Confluence.
 
 Usa Confluence Cloud REST API v2:
 
@@ -353,45 +352,39 @@ Responsabilidad:
 - Generar un `release-input.json` mock.
 - Permitir probar el flujo local sin depender de git.
 
-## Template Confluence
+## Template Markdown
 
 Archivo:
 
 ```text
-templates/confluence-release-template.html
+templates/release-doc-template.md
 ```
 
 Estructura:
 
-```html
-<h1>Release {{fecha}} - {{titulo}}</h1>
+```md
+# Release {{fecha}} - {{titulo}}
 
-<h2>Resumen funcional</h2>
-<p>{{resumen_funcional}}</p>
+## Resumen funcional
+{{resumen_funcional}}
 
-<h2>Resumen técnico</h2>
-<ul>
-  {{resumen_tecnico}}
-</ul>
+## Resumen técnico
+{{resumen_tecnico}}
 
-<h2>Cambios detallados</h2>
-<ul>
-  {{cambios_detallados}}
-</ul>
+## Cambios detallados
+{{cambios_detallados}}
 
-<h2>Impacto</h2>
-<p>{{impacto}}</p>
+## Impacto
+{{impacto}}
 
-<h2>Riesgos o consideraciones</h2>
-<p>{{riesgos}}</p>
+## Riesgos o consideraciones
+{{riesgos}}
 
-<h2>Referencias</h2>
-<ul>
-  <li><strong>Repositorio:</strong> {{repo}}</li>
-  <li><strong>Branch:</strong> {{branch}}</li>
-  <li><strong>Commit:</strong> {{commit}}</li>
-  <li><strong>Fecha:</strong> {{fecha}}</li>
-</ul>
+## Referencias
+- **Repositorio:** {{repo}}
+- **Branch:** {{branch}}
+- **Commit:** {{commit}}
+- **Fecha:** {{fecha}}
 ```
 
 ## Variables de Bitbucket
@@ -501,14 +494,14 @@ Si todo funciona y los tests pasan, el pipeline debe:
 1. Marcar `RELEASE_STATUS=passed`.
 2. Clonar `Automation-scripts-bitbucket`.
 3. Generar `release-input.json`.
-4. Generar `release-doc.html` usando Groq.
+4. Generar `release-doc.md` usando Groq.
 5. Crear una pagina en Confluence.
 
 Salida esperada:
 
 ```text
 release-input.json generado
-release-doc.html generado
+release-doc.md generado
 Proveedor AI usado: groq
 Modelo AI usado: llama-3.1-8b-instant
 Pagina creada en Confluence.
@@ -519,10 +512,10 @@ Si los tests fallan, el pipeline debe:
 1. Marcar `RELEASE_STATUS=broken`.
 2. Clonar `Automation-scripts-bitbucket`.
 3. Generar `release-input.json`.
-4. Generar `release-doc.html` usando Groq.
+4. Generar `release-doc.md` usando Groq.
 5. Crear una pagina en Confluence con titulo `[BROKEN]`.
-6. Agregar un macro rojo `BROKEN` compatible con Confluence.
-7. Pintar el titulo principal del HTML en rojo cuando Confluence respeta estilos inline.
+6. Prefijar el titulo principal del Markdown con `[BROKEN]`.
+7. Convertir el Markdown a HTML para publicarlo en Confluence.
 8. Documentar que test fallo, en que archivo y por que.
 
 Salida esperada para un release roto:

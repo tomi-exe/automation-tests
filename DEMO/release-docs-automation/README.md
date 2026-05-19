@@ -13,7 +13,7 @@ collect-changes.js
         ↓
 OpenAI
         ↓
-release-doc.html
+ release-doc.md
         ↓
 Confluence API
         ↓
@@ -43,7 +43,7 @@ TARGET_REPO=
 
 ## Ejecutar sample
 
-El sample crea un `release-input.json` mock sin depender de git. El script npm `release:sample` tambien intenta generar el HTML, por lo que requiere `OPENAI_API_KEY`.
+El sample crea un `release-input.json` mock sin depender de git. El script npm `release:sample` tambien intenta generar el Markdown, por lo que requiere `OPENAI_API_KEY`.
 
 ```bash
 npm install
@@ -76,7 +76,7 @@ npm run release:publish
 
 `upload-confluence.js` lee:
 
-- `release-doc.html`
+- `release-doc.md`
 - `release-input.json`
 
 Luego crea una pagina hija usando Confluence Cloud REST API v2:
@@ -93,10 +93,10 @@ Payload:
   "status": "current",
   "title": "Release YYYY-MM-DD - branch",
   "parentId": "...",
-  "body": {
-    "representation": "storage",
-    "value": "HTML generado"
-  }
+    "body": {
+      "representation": "storage",
+      "value": "HTML generado desde Markdown"
+    }
 }
 ```
 
@@ -104,20 +104,20 @@ No se imprimen tokens. Si Confluence responde con error, el script muestra la re
 
 ## Template
 
-El HTML base esta en:
+El template base esta en:
 
 ```text
-templates/confluence-release-template.html
+templates/release-doc-template.md
 ```
 
-El prompt exige que OpenAI respete esa estructura y devuelva solo HTML compatible con Confluence, sin markdown.
+El prompt exige que OpenAI respete esa estructura y devuelva solo Markdown. Para Confluence se convierte a HTML antes de publicar.
 
 ## Limitaciones
 
 - La calidad del resultado depende de commits y diffs claros.
 - `git diff HEAD~1 HEAD` necesita al menos dos commits.
 - La publicacion requiere permisos correctos en el espacio y pagina padre de Confluence.
-- `release:sample` necesita `OPENAI_API_KEY` porque genera el HTML despues de crear el input mock.
+- `release:sample` necesita `OPENAI_API_KEY` porque genera el Markdown despues de crear el input mock.
 - No valida aun contra un schema formal de Confluence storage.
 
 ## Mejoras futuras
